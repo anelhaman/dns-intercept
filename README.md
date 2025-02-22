@@ -72,6 +72,8 @@ dns-intercept completion fish > ~/.config/fish/completions/dns-intercept.fish
 ```
 
 ## Prerequisites
+For more information on how CoreDNS handles rewrites, refer to the official documentation: [CoreDNS Rewrite Plugin](https://coredns.io/plugins/rewrite/)
+
 - Kubernetes cluster with CoreDNS deployed
 - `kubectl` configured with appropriate cluster access
 - Go 1.16 or later (for building from source)
