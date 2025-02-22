@@ -60,33 +60,39 @@ dns-intercept show
 ```
 
 ### Autocompletion
-The `completion` command generates an autocompletion script for various shells.
+The `completion` command generates an autocompletion script for various shells. For example:
 
-#### Usage:
 ```sh
-dns-intercept completion [command]
+# Generate Bash completion script
+dns-intercept completion bash > /usr/local/etc/bash_completion.d/dns-intercept
+
+# Generate Zsh completion script
+dns-intercept completion zsh > "${fpath[1]}/_dns-intercept"
+
+# Generate Fish completion script
+dns-intercept completion fish > ~/.config/fish/completions/dns-intercept.fish
 ```
 
-#### Available Commands:
-- `bash`        Generate the autocompletion script for bash
-- `fish`        Generate the autocompletion script for fish
-- `powershell`  Generate the autocompletion script for powershell
-- `zsh`         Generate the autocompletion script for zsh
+## Prerequisites
+- Kubernetes cluster with CoreDNS deployed
+- `kubectl` configured with appropriate cluster access
+- Go 1.16 or later (for building from source)
 
-#### Example:
-```sh
-# Generate autocompletion script for bash
-dns-intercept completion bash
+## Configuration
+By default, dns-intercept looks for the CoreDNS ConfigMap in the `kube-system` namespace. You can override this by setting the following environment variables:
+
+- `COREDNS_NAMESPACE`: The namespace where CoreDNS is deployed (default: "kube-system")
+- `COREDNS_CONFIGMAP`: The name of the CoreDNS ConfigMap (default: "coredns")
+
+## File Format for Bulk Import
+When using the `-f` flag with the `add` command, the input file should contain one rule per line in the following format:
 ```
-
-## Requirements
-- Kubernetes cluster with CoreDNS
-- `kubectl` installed and configured
-- Go (for building from source)
+source.domain.local target.domain.com
+another.source.local another.target.com
+```
 
 ## Contributing
-Contributions are welcome! Feel free to open issues or submit pull requests.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
-This project is licensed under the MIT License. See `LICENSE` for details.
-
+This project is licensed under the MIT License - see the LICENSE file for details.
