@@ -38,8 +38,6 @@ This command adds DNS interception rules to the CoreDNS ConfigMap.
 # Add a single interception rule
 dns-intercept add a.domain.local domain.com
 
-# Add multiple rules from a file
-dns-intercept add -f records.txt
 ```
 
 ### Remove DNS Interception Rules
@@ -79,10 +77,7 @@ dns-intercept completion fish > ~/.config/fish/completions/dns-intercept.fish
 - Go 1.16 or later (for building from source)
 
 ## Configuration
-By default, dns-intercept looks for the CoreDNS ConfigMap in the `kube-system` namespace. You can override this by setting the following environment variables:
-
-- `COREDNS_NAMESPACE`: The namespace where CoreDNS is deployed (default: "kube-system")
-- `COREDNS_CONFIGMAP`: The name of the CoreDNS ConfigMap (default: "coredns")
+By default, dns-intercept looks for the CoreDNS ConfigMap in the `kube-system` namespace.
 
 ## File Format for Bulk Import
 When using the `-f` flag with the `add` command, the input file should contain one rule per line in the following format:
