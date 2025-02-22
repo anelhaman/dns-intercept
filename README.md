@@ -3,6 +3,14 @@
 ## Overview
 `dns-intercept` is a CLI tool for managing DNS interceptions in CoreDNS within a Kubernetes environment. This tool allows you to add, remove, and view DNS rewrite rules in the CoreDNS configuration.
 
+
+## Prerequisites
+For more information on how CoreDNS handles rewrites, refer to the official documentation: [CoreDNS Rewrite Plugin](https://coredns.io/plugins/rewrite/)
+
+- Kubernetes cluster with CoreDNS deployed
+- `kubectl` configured with appropriate cluster access
+- Go 1.23 or later (for building from source)
+
 ## Installation
 To install `dns-intercept`, clone the repository and build it using Go:
 
@@ -27,7 +35,16 @@ GOOS=windows GOARCH=amd64 go build -o dns-intercept-windows-amd64.exe
 GOOS=windows GOARCH=arm64 go build -o dns-intercept-windows-arm64.exe
 ```
 
-## Usage
+## Configuration
+By default, dns-intercept looks for the CoreDNS ConfigMap in the `kube-system` namespace.
+
+
+#### Override KUBECONFIG Path
+```sh
+export KUBECONFIG=/path/to/custom/kubeconfig
+```
+If `KUBECONFIG` is set, `dns-intercept` will use the specified kubeconfig file instead of the default `~/.kube/config`.
+
 
 ### Kubernetes Context Override
 
@@ -38,6 +55,8 @@ export KUBECONTEXT=my-cluster
 ```
 
 If `KUBECONTEXT` is set, `dns-intercept` will use the specified context instead of the default one.
+
+## Usage
 
 The CLI supports three main operations: `add`, `remove`, and `show`.
 
@@ -51,6 +70,13 @@ dns-intercept add a.domain.local domain.com
 
 ```
 
+### File Format for Bulk Import
+When using the `-f` flag with the `add` command, the input file should contain one rule per line in the following format:
+```
+source.domain.local target.domain.com
+another.source.local another.target.com
+```
+
 ### Remove DNS Interception Rules
 This command removes DNS interception rules for a specified domain from the CoreDNS ConfigMap.
 
@@ -58,6 +84,12 @@ This command removes DNS interception rules for a specified domain from the Core
 ```sh
 # Remove interception for a domain
 dns-intercept remove a.domain.local
+```
+
+or use `--all` to remove all rules
+```sh
+# Remove interception for all domains
+dns-intercept remove --all
 ```
 
 ### Show DNS Interception Rules
@@ -80,23 +112,6 @@ dns-intercept completion zsh > "${fpath[1]}/_dns-intercept"
 
 # Generate Fish completion script
 dns-intercept completion fish > ~/.config/fish/completions/dns-intercept.fish
-```
-
-## Prerequisites
-For more information on how CoreDNS handles rewrites, refer to the official documentation: [CoreDNS Rewrite Plugin](https://coredns.io/plugins/rewrite/)
-
-- Kubernetes cluster with CoreDNS deployed
-- `kubectl` configured with appropriate cluster access
-- Go 1.16 or later (for building from source)
-
-## Configuration
-By default, dns-intercept looks for the CoreDNS ConfigMap in the `kube-system` namespace.
-
-## File Format for Bulk Import
-When using the `-f` flag with the `add` command, the input file should contain one rule per line in the following format:
-```
-source.domain.local target.domain.com
-another.source.local another.target.com
 ```
 
 ## Contributing
