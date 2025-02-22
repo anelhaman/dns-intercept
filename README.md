@@ -57,7 +57,6 @@ export KUBECONTEXT=my-cluster
 If `KUBECONTEXT` is set, `dns-intercept` will use the specified context instead of the default one.
 
 ## Usage
-
 The CLI supports three main operations: `add`, `remove`, and `show`.
 
 ### Add DNS Interception Rules
