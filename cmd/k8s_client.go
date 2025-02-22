@@ -15,15 +15,27 @@ import (
 
 // getK8sClient returns a Kubernetes clientset using the default kubeconfig
 func getK8sClient() (*kubernetes.Clientset, error) {
-	home := homedir.HomeDir()
-
-	kubeconfig := os.Getenv("KUBECONFIG")
-
-	if kubeconfig == "" {
-		kubeconfig = filepath.Join(home, ".kube", "config")
+	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
+	
+	// Allow KUBECONFIG override
+	if kubeconfig := os.Getenv("KUBECONFIG"); kubeconfig != "" {
+		loadingRules.ExplicitPath = kubeconfig
+	} else {
+		loadingRules.ExplicitPath = filepath.Join(homedir.HomeDir(), ".kube", "config")
 	}
 
-	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+	configOverrides := &clientcmd.ConfigOverrides{}
+	
+	// Allow context override from environment
+	if context := os.Getenv("KUBECONTEXT"); context != "" {
+		configOverrides.CurrentContext = context
+	}
+
+	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		loadingRules,
+		configOverrides,
+	).ClientConfig()
+	
 	if err != nil {
 		return nil, fmt.Errorf("error building kubeconfig: %v", err)
 	}

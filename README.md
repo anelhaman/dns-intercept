@@ -28,6 +28,17 @@ GOOS=windows GOARCH=arm64 go build -o dns-intercept-windows-arm64.exe
 ```
 
 ## Usage
+
+### Kubernetes Context Override
+
+The tool allows overriding the Kubernetes context using the `KUBECONTEXT` environment variable.
+
+```sh
+export KUBECONTEXT=my-cluster
+```
+
+If `KUBECONTEXT` is set, `dns-intercept` will use the specified context instead of the default one.
+
 The CLI supports three main operations: `add`, `remove`, and `show`.
 
 ### Add DNS Interception Rules

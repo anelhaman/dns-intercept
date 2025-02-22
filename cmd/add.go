@@ -40,14 +40,14 @@ func runAdd(cmd *cobra.Command, args []string) error {
 		if len(args) != 2 {
 			return fmt.Errorf("inline mode requires exactly 2 arguments: domain and target")
 		}
-		rewriteLine := fmt.Sprintf("rewrite name %s %s", args[0], args[1])
+		rewriteLine := fmt.Sprintf("%s %s", args[0], args[1])
 		rewriteLines = []string{rewriteLine}
 	}
 
 	if err := addK8sRule(rewriteLines); err != nil {
 		return fmt.Errorf("failed to add rule to kubernetes: %w", err)
 	}
-	
+
 	return nil
 }
 
