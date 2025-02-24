@@ -62,6 +62,11 @@ func addK8sRule(rules []string) error {
 		return fmt.Errorf("failed to update CoreDNS configmap: %v", err)
 	}
 
+	// Restart CoreDNS pods after adding rules
+	if err := restartCoreDNS(clientset); err != nil {
+		return fmt.Errorf("failed to restart CoreDNS: %v", err)
+	}
+
 	return nil
 }
 
@@ -102,6 +107,11 @@ func removeK8sRule(domain string) error {
 	configMap.Data["Corefile"] = strings.Join(newLines, "\n")
 	if err := updateCoreDNSConfigMap(clientset, configMap); err != nil {
 		return fmt.Errorf("failed to update CoreDNS configmap: %v", err)
+	}
+
+	// Restart CoreDNS pods after removing rules
+	if err := restartCoreDNS(clientset); err != nil {
+		return fmt.Errorf("failed to restart CoreDNS: %v", err)
 	}
 
 	return nil

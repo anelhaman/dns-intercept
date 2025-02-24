@@ -66,3 +66,23 @@ func updateCoreDNSConfigMap(clientset *kubernetes.Clientset, configMap *corev1.C
 	)
 	return err
 }
+
+// restartCoreDNS restarts the CoreDNS pods in the cluster
+func restartCoreDNS(clientset *kubernetes.Clientset) error {
+	// Get CoreDNS pods
+	pods, err := clientset.CoreV1().Pods("kube-system").List(context.Background(), metav1.ListOptions{
+		LabelSelector: "k8s-app=kube-dns",
+	})
+	if err != nil {
+		return fmt.Errorf("failed to list CoreDNS pods: %v", err)
+	}
+
+	// Delete each pod to trigger a restart
+	for _, pod := range pods.Items {
+		err := clientset.CoreV1().Pods("kube-system").Delete(context.Background(), pod.Name, metav1.DeleteOptions{})
+		if err != nil {
+			return fmt.Errorf("failed to delete CoreDNS pod %s: %v", pod.Name, err)
+		}
+	}
+	return nil
+}

@@ -39,5 +39,10 @@ func removeAllK8sRules() error {
 		return fmt.Errorf("failed to update CoreDNS configmap: %v", err)
 	}
 
+	// Restart CoreDNS pods after removing rules
+	if err := restartCoreDNS(clientset); err != nil {
+		return fmt.Errorf("failed to restart CoreDNS: %v", err)
+	}
+
 	return nil
 }
