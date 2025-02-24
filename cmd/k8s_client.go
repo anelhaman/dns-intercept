@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -16,7 +17,7 @@ import (
 // getK8sClient returns a Kubernetes clientset using the default kubeconfig
 func getK8sClient() (*kubernetes.Clientset, error) {
 	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
-	
+
 	// Allow KUBECONFIG override
 	if kubeconfig := os.Getenv("KUBECONFIG"); kubeconfig != "" {
 		loadingRules.ExplicitPath = kubeconfig
@@ -25,7 +26,7 @@ func getK8sClient() (*kubernetes.Clientset, error) {
 	}
 
 	configOverrides := &clientcmd.ConfigOverrides{}
-	
+
 	// Allow context override from environment
 	if context := os.Getenv("KUBECONTEXT"); context != "" {
 		configOverrides.CurrentContext = context
@@ -35,7 +36,7 @@ func getK8sClient() (*kubernetes.Clientset, error) {
 		loadingRules,
 		configOverrides,
 	).ClientConfig()
-	
+
 	if err != nil {
 		return nil, fmt.Errorf("error building kubeconfig: %v", err)
 	}
@@ -69,20 +70,22 @@ func updateCoreDNSConfigMap(clientset *kubernetes.Clientset, configMap *corev1.C
 
 // restartCoreDNS restarts the CoreDNS pods in the cluster
 func restartCoreDNS(clientset *kubernetes.Clientset) error {
-	// Get CoreDNS pods
-	pods, err := clientset.CoreV1().Pods("kube-system").List(context.Background(), metav1.ListOptions{
-		LabelSelector: "k8s-app=kube-dns",
-	})
+	// Get CoreDNS deployment
+	deployment, err := clientset.AppsV1().Deployments("kube-system").Get(context.Background(), "coredns", metav1.GetOptions{})
 	if err != nil {
-		return fmt.Errorf("failed to list CoreDNS pods: %v", err)
+		return fmt.Errorf("failed to get CoreDNS deployment: %v", err)
 	}
 
-	// Delete each pod to trigger a restart
-	for _, pod := range pods.Items {
-		err := clientset.CoreV1().Pods("kube-system").Delete(context.Background(), pod.Name, metav1.DeleteOptions{})
-		if err != nil {
-			return fmt.Errorf("failed to delete CoreDNS pod %s: %v", pod.Name, err)
-		}
+	// Update deployment annotations to trigger a rolling restart
+	if deployment.Spec.Template.Annotations == nil {
+		deployment.Spec.Template.Annotations = make(map[string]string)
+	}
+	deployment.Spec.Template.Annotations["kubectl.kubernetes.io/restartedAt"] = time.Now().Format(time.RFC3339)
+
+	// Apply the update
+	_, err = clientset.AppsV1().Deployments("kube-system").Update(context.Background(), deployment, metav1.UpdateOptions{})
+	if err != nil {
+		return fmt.Errorf("failed to update CoreDNS deployment: %v", err)
 	}
 	return nil
 }
